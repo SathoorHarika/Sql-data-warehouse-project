@@ -1,0 +1,156 @@
+/*
+===============================================================================
+Stored Procedure: Load Bronze Layer (Source -> Bronze)
+===============================================================================
+Script Purpose:
+    This stored procedure loads data into the 'bronze' schema from external CSV files. 
+    It performs the following actions:
+    - Truncates the bronze tables before loading data.
+    - Uses the `BULK INSERT` command to load data from csv Files to bronze tables.
+
+Parameters:
+    None. 
+	  This stored procedure does not accept any parameters or return any values.
+
+Usage Example:
+    EXEC bronze.load_bronze;
+===============================================================================
+*/
+/*
+TO start the procedure
+==========
+*/
+
+create or alter procedure bronze.load_bronze as
+begin
+declare @start_time datetime, @end_time datetime,@batch_start_time datetime,@batch_end_time datetime
+set @batch_start_time=getdate();
+begin try
+print ('==============================================');
+print('creating the store_procedure bronze layer');
+print ('==============================================');
+print('-------------------');
+print('loading CRM data');
+print('-------------------');
+set @start_time=getdate();
+print('>> truncating table: bronze.crm_cust_info');
+truncate table bronze.crm_cust_info;
+print('>> inserting data into: bronze.crm_cust_info');
+BULK INSERT bronze.crm_cust_info
+FROM 'C:\Users\Lenovo\Desktop\Harika\SQL\sql-data-warehouse-project\sql-data-warehouse-project\datasets\source_crm\cust_info.csv'
+WITH (
+    FIRSTROW = 2,
+    FIELDTERMINATOR = ',',
+    ROWTERMINATOR = '\n',
+    TABLOCK
+);
+set @end_time=getdate();
+print('load duration ' + cast(datediff (second,@start_time,@end_time) AS nvarchar) + ' second');
+print('==============================');
+
+set @start_time=getdate();
+print('>> truncating table: bronze.crm_prd_info');
+truncate table bronze.crm_prd_info;
+print('>> inserting data into: bronze.crm_prd_info');
+BULK INSERT bronze.crm_prd_info
+FROM 'C:\Users\Lenovo\Desktop\Harika\SQL\sql-data-warehouse-project\sql-data-warehouse-project\datasets\source_crm\prd_info.csv'
+WITH (
+    FIRSTROW = 2,
+    FIELDTERMINATOR = ',',
+    ROWTERMINATOR = '\n',
+    TABLOCK
+);
+set @end_time=getdate();
+print('load duration ' + cast(datediff (second,@start_time,@end_time) AS nvarchar) + ' second');
+print('==============================');
+
+set @start_time=getdate();
+print('>> truncating table: bronze.crm_sales_details');
+truncate table bronze.crm_sales_details;
+print('>> inserting data into: bronze.crm_sales_details');
+BULK INSERT bronze.crm_sales_details
+FROM 'C:\Users\Lenovo\Desktop\Harika\SQL\sql-data-warehouse-project\sql-data-warehouse-project\datasets\source_crm\sales_details.csv'
+WITH (
+    FIRSTROW = 2,
+    FIELDTERMINATOR = ',',
+    ROWTERMINATOR = '\n',
+    TABLOCK
+);
+set @end_time=getdate();
+print('load duration ' + cast(datediff (second,@start_time,@end_time) AS nvarchar) + ' second');
+print('==============================');
+print('-------------------');
+print('loading ERP data');
+print('-------------------');
+
+set @start_time=getdate();
+print('>> truncating table: bronze.erp_cust_az12');
+truncate table bronze.erp_cust_az12;
+print('>> inserting data into: bronze.erp_cust_az12');
+BULK INSERT bronze.erp_cust_az12
+FROM 'C:\Users\Lenovo\Desktop\Harika\SQL\sql-data-warehouse-project\sql-data-warehouse-project\datasets\source_erp\CUST_AZ12.csv'
+WITH (
+    FIRSTROW = 2,
+    FIELDTERMINATOR = ',',
+    ROWTERMINATOR = '\n',
+    TABLOCK
+);
+set @end_time=getdate();
+print('load duration ' + cast(datediff (second,@start_time,@end_time) AS nvarchar) + ' second');
+print('==============================');
+
+set @start_time=getdate();
+print('>> truncating table: bronze.erp_loc_a101');
+truncate table bronze.erp_loc_a101;
+print('>> inserting data into: bronze.erp_loc_a101');
+BULK INSERT bronze.erp_loc_a101
+FROM 'C:\Users\Lenovo\Desktop\Harika\SQL\sql-data-warehouse-project\sql-data-warehouse-project\datasets\source_erp\LOC_A101.csv'
+WITH (
+    FIRSTROW = 2,
+    FIELDTERMINATOR = ',',
+    ROWTERMINATOR = '\n',
+    TABLOCK
+);
+set @end_time=getdate();
+print('load duration ' + cast(datediff (second,@start_time,@end_time) AS nvarchar) + ' second');
+print('==============================');
+
+set @start_time=getdate();
+print('>> truncating table: bronze.erp_px_cat_g1v2');
+truncate table bronze.erp_px_cat_g1v2;
+print('>> inserting data into: bronze.erp_px_cat_g1v2');
+BULK INSERT bronze.erp_px_cat_g1v2
+FROM 'C:\Users\Lenovo\Desktop\Harika\SQL\sql-data-warehouse-project\sql-data-warehouse-project\datasets\source_erp\PX_CAT_G1V2.csv'
+WITH (
+    FIRSTROW = 2,
+    FIELDTERMINATOR = ',',
+    ROWTERMINATOR = '\n',
+    TABLOCK
+);
+set @end_time=getdate();
+print('load duration ' + cast(datediff (second,@start_time,@end_time) AS nvarchar) + ' second');
+print('==============================');
+
+
+select count(*) from bronze.crm_cust_info;
+select count(*) from bronze.crm_prd_info;
+select count(*) from bronze.crm_sales_details;
+select count(*) from bronze.erp_cust_az12;
+select count(*) from bronze.erp_loc_a101 ;
+select count(*) from bronze.erp_px_cat_g1v2;
+
+set @batch_end_time =getdate();
+print('total bronze layer load duration ' + cast(datediff (second,@batch_start_time,@batch_end_time) AS nvarchar) + ' second');
+print('==============================');
+end try
+
+begin catch
+print ('error_meassage' + cast (error_number() as nvarchar));
+end catch
+END 
+/*
+========
+TO execute the procedure
+==========
+*/
+EXEC bronze.load_bronze
